@@ -13,7 +13,7 @@ var arr = [{
 	name: 'Test',
 	delay: 50
 }];
-var log = function(msg, obj) {
+var log = function (msg, obj) {
 	//对log进行了封装。主要是增加了秒钟的输出，通过秒数的差值方便大家对async的理解。
 	process.stdout.write(moment().format('ss.SSS') + '> ');
 	if (obj !== undefined) {
@@ -24,14 +24,14 @@ var log = function(msg, obj) {
 	}
 };
 
-async.mapLimit(arr, 2, function(item, callback) {
-	log('1.5 enter: ' + item.name);
-	setTimeout(function() {
-		log('1.5 handle: ' + item.name);
+async.mapLimit(arr, 3, function (item, callback) {
+	log('enter: ' + item.name);
+	setTimeout(function () {
+		log('-->handle: ' + item.name);
 		// if (item.name === 'Jack') callback('myerr');
 		callback(null, item.name + '!!!');
 	}, item.delay);
-}, function(err, results) {
-	log('1.5 err: ', err);
-	log('1.5 results: ', results);
-});
+},
+	function (err, results) {//this is the finally callback
+		log('all arr end -> finally results: ', results);
+	});
