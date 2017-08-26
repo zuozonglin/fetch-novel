@@ -44,8 +44,8 @@ var delayAsync = function(dataList, start, end, limit) {
 			checkTimer,
 			checkTimeOut,
 			fetchTimers = [],
-			count = Math.ceil((end - start) / limit),
-			remain = start - end,
+			count = Math.ceil((end - start) / limit),//循环次数
+			remain = start - end,//剩余
 			i = 0;
 		if (dataList.length <= 0) {
 			//数据长度为空就返回
@@ -57,8 +57,7 @@ var delayAsync = function(dataList, start, end, limit) {
 		try {
 			/*章数的开始和结束*/
 			console.log(`从${start}到 ${end}`)
-			let startIndex = start,
-				endIndex;
+			let startIndex = start, endIndex;
 			while (startIndex != end) {
 				/*
 				需要注意的是当剩余的任务不足以达到并发数的时候
@@ -77,8 +76,7 @@ var delayAsync = function(dataList, start, end, limit) {
 					//通过tempTimer 保存下来
 					let tempTimer = setTimeout(async function() {
 						//获得此次任务开始执行的时间
-						var startTime = new Date(),
-							time, chapterResult = [];
+						var startTime = new Date(), time, chapterResult = [];
 						//进行并发捕获执行命令
 						try {
 							chapterResult = await asyncFetch(chapter, limit);
@@ -86,7 +84,7 @@ var delayAsync = function(dataList, start, end, limit) {
 							console.log(e)
 						}
 						result = result.concat(chapterResult)
-							//用于判断任务标记 
+						//用于判断任务标记 
 						counter++;
 						time = new Date() - startTime;
 						console.log(`完成抓取 ${startIndex} 到 ${endIndex} 计数器是${counter} 时间是${time}`)

@@ -22,7 +22,7 @@ var toNmber = function(str) {
 				//100以下
 				result = chapterNumber.indexOf(result[1]) + chapterNumber(result[0]);
 			} else {
-				if (chapterNumber < 3)
+				if (chapterNumber < 3){}
 				//1000以下,一百零九,一百,
 			}
 		}
