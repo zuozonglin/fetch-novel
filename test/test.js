@@ -22,7 +22,8 @@ var log = function(msg, obj) {
 	} else {
 		console.log(msg);
 	}
-}
+};
+
 async.mapLimit(arr, 2, function(item, callback) {
 	log('1.5 enter: ' + item.name);
 	setTimeout(function() {
