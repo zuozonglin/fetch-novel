@@ -1,4 +1,4 @@
-const Chapter = require('../lib/mongo').Chapter;
+const Chapter = require('../lib/mongo.js').Chapter;
 
 module.exports = {
   // 保存章节内容

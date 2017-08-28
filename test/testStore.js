@@ -20,11 +20,13 @@ var testStoreBook = async () => {// node 版本 必须高于 7.9
 			title: "123132"
 		}]
 	},
-		bookNum = "4445";
+		bookNum = "4447";
 
 	try {
-		// var query = await BookModel.getBookByBookNum(bookNum);
-		var result = await BookModel.create(data);
+		var query = await BookModel.getBookByBookNum(bookNum);
+		console.log(query);
+		process.exit();
+		//var result = await BookModel.create(data);
 	} catch (e) {
 		console.log(e)
 	}
@@ -54,9 +56,11 @@ var testStoreChapters = async () => {
 		bookNum = "4445"
 
 	try {
+		// var result = await ChapterModel.create(data);
 		// var result = await ChapterModel.updateChapterByBookNum(bookNum, data);
 		var result = await ChapterModel.getChapterByBookNum(bookNum);
-		console.log(result)
+		console.log(result);
+		process.exit();
 	} catch (e) {
 		console.log(e)
 	}
@@ -65,8 +69,8 @@ var testStoreChapters = async () => {
 };
 (async function () {
 	try {
-		// await testStoreChapters()
-		var query = await testStoreBook()
+		await testStoreChapters();
+		// var query = await testStoreBook()
 		// var query = await testStoreChapters()
 
 	} catch (e) {
