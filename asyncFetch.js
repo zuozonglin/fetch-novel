@@ -1,4 +1,4 @@
-const async = require('async')
+const async = require('async');
 const execAsync = require('async-child-process').execAsync;
 /*实现并发抓取的函数*/
 var asyncFetch = function(data, number, method) {
@@ -9,7 +9,7 @@ var asyncFetch = function(data, number, method) {
 			let resultCollection = [];
 			async.mapLimit(data, number, async function(data, callback) {
 				//需要设置延时不然ip会被封掉
-				let cmd = `node fetchChapter.js  -u ${data.link} -f -p`,
+				let cmd = `node fetchChapter.js -u ${data.link} -f -p`,
 					json,
 					//获取一个内容就输出一个
 					{
@@ -30,11 +30,11 @@ var asyncFetch = function(data, number, method) {
 			}, function(err) {
 				//回调函数在全部都执行完以后执行
 				if (err) {
-					reject(err)
+					reject(err);
 				}
-				resolve(resultCollection)
-			})
-		})
+				resolve(resultCollection);
+			});
+		});
 	}
 	/*实现延时加载的函数*/
 var delayAsync = function(dataList, start, end, limit) {
@@ -49,7 +49,7 @@ var delayAsync = function(dataList, start, end, limit) {
 			i = 0;
 		if (dataList.length <= 0) {
 			//数据长度为空就返回
-			reject("error")
+			reject("error");
 			return;
 		}
 		//打印一下输入情况
@@ -102,16 +102,16 @@ var delayAsync = function(dataList, start, end, limit) {
 		/*定时判断任务是否完成*/
 		checkTimer = setInterval(function() {
 			console.log(`counter is ${counter} count is ${count}`)
-			if (counter == count) {
-				//清除定时器
-				clearTimeout(checkTimeOut);
-				//清除定时器
-				clearInterval(checkTimer);
-				resolve(result)
-			}
+			// if (counter == count) {
+			// 	//清除定时器
+			// 	clearTimeout(checkTimeOut);
+			// 	//清除定时器
+			// 	clearInterval(checkTimer);
+			// 	resolve(result);
+			// }
 		}, 1000);
 		//or use promise all ?
-		//30s计时器判断超时,超时时间暂做距离
+		//500s计时器判断超时,超时进程退出
 		checkTimeOut = setTimeout(function() {
 			//超时清除所有定时器
 			for (let i = 0; i < fetchTimers.length; i++) {
@@ -119,10 +119,10 @@ var delayAsync = function(dataList, start, end, limit) {
 			}
 			//清除定时判断
 			clearInterval(checkTimer);
-			console.log("timout")
-			reject(result)
-		}, 50000);
-	})
+			console.log("timout,stop all timer");
+			reject(result);
+		}, 500000);
+	});
 }
 
 module.exports = {

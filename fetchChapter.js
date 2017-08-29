@@ -60,12 +60,12 @@ node fetchChapter.js -u http://www.qu.la/book/5443/3179374.html -f -p
 		var result = await page.evaluate(function() {
 			//移除一些无关内容(等于直接在结果网页上的dom上进行操作)
 			//请注意这里如果调用console.log()是无效的!
-			$("#content a:last-child").remove()
-			$("#content script:last-child").remove()
-			$("#content div:last-child").remove()
-			$("#content script:last-child").remove()
+			$("#content a:last-child").remove();
+			$("#content script:last-child").remove();
+			$("#content div:last-child").remove();
+			$("#content script:last-child").remove();
 			return ({
-				title: $("h1").html(),
+				title: $("h1").html().replace(':',' ').replace(';',' '),
 				content: $("#content").html()
 			});
 		})

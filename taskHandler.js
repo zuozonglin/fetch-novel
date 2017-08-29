@@ -1,7 +1,7 @@
 const exec = require('child_process').exec;
 const execAsync = require('async-child-process').execAsync;
-const async = require('async')
-const delayAsync = require('./asyncFetch').delayAsync;
+const async = require('async');
+const delayAsync = require('./asyncFetch.js').delayAsync;
 const program = require('commander');
 const BookModel = require('./model/Books.js');
 const ChapterModel = require('./model/Chapters.js');
@@ -39,7 +39,7 @@ if (!program.start || !program.end) {
 }
 
 //
-(async function() {
+(async function () {
 
 	const {
 		stdout
@@ -57,17 +57,18 @@ if (!program.start || !program.end) {
 	//use to debug 
 	// let dataList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 	if (!dataList || data.length <= 0) {
-		return
+		return ;
 	}
 	// /*储存*/
 	// let book = {
-	// 		bookNum: data.bookNumber,
-	// 		url: data.url,
-	// 		chapters: dataList,
-	// 	},
+	// 	bookNum: data.bookNumber,
+	// 	url: data.url,
+	// 	chapters: dataList,
+	// },
 	// 	result = await BookModel.create(book);
-	// console.log(result)
+	// 	console.log('store books in mongo,',result);
 	// console.log(dataList)
+	
 	//分发任务 每10s调取一次并发抓取10条记录 
 	//截取需要的章节数
 	/*根据章节,章节是一开始,默认无序章*/
@@ -75,16 +76,16 @@ if (!program.start || !program.end) {
 	//下面是抓每章内容
 	try {
 		fetchResult = await delayAsync(dataList, start, end, limit);
-		console.log(fetchResult)
+		//console.log(fetchResult)
 		var chapters = await ChapterModel.create({
 			bookNum: data.bookNumber,
 			start: start,
 			end: end,
 			chapters: fetchResult,
 		});
-		console.log(chapters)
+		console.log('store chapters in mongo,',chapters);
 	} catch (e) {
-		console.log(e)
+		console.log(e);
 	}
 	return
 })()
