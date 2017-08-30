@@ -13,8 +13,11 @@ l 是并发数
 m 模式
 b 书的编号
 test command:
-node taskHandler.js -s 0 -e 10 -l 3 -b 5443
+node taskHandler.js -s 0 -e 100 -l 5 -b 5443
 */
+
+var total_time = +new Date();//总时间
+
 program
 	.version('0.1.0')
 	.option('-s, --start [start]', 'start chapter', 0)
@@ -29,63 +32,72 @@ program
  输出方式二 文件输出(在关注react-pdf,希望支持pdf输出)
 */
 if (!program.book) {
-	return
+	return;
 } else {
 	cmd = `node fetchAllChapters.js -b ${program.book}`;
 }
 if (!program.start || !program.end) {
-	console.log("must input with start-chapter and end-chapter ")
+	console.log("must input with start-chapter and end-chapter ");
 	return;
 }
 
-//
+//异步抓取流程
 (async function () {
-
-	const {
-		stdout
-		//调取子进程 执行cmd
-	} = await execAsync(cmd, {
-		//default value of maxBuffer is 200KB.
-		maxBuffer: 1024 * 500
-	});
-	let data = JSON.parse(stdout),
-		start = parseInt(program.start),
-		end = parseInt(program.end),
-		limit = parseInt(program.limit),
-		dataList = data['dataList'],
-		fetchResult = null;
-	//use to debug 
-	// let dataList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-	if (!dataList || data.length <= 0) {
-		return ;
-	}
-	// /*储存*/
-	// let book = {
-	// 	bookNum: data.bookNumber,
-	// 	url: data.url,
-	// 	chapters: dataList,
-	// },
-	// 	result = await BookModel.create(book);
-	// 	console.log('store books in mongo,',result);
-	// console.log(dataList)
-	
-	//分发任务 每10s调取一次并发抓取10条记录 
-	//截取需要的章节数
-	/*根据章节,章节是一开始,默认无序章*/
-	//dataList, start, end, limit
-	//下面是抓每章内容
 	try {
+		const {
+			stdout //调取子进程 执行cmd 获取结果
+		} = await execAsync(cmd, {
+			//default value of maxBuffer is 200KB.
+			maxBuffer: 1024 * 5000
+		});
+		let data = JSON.parse(stdout),
+			start = parseInt(program.start),
+			end = parseInt(program.end),
+			limit = parseInt(program.limit),
+			dataList = data['dataList'],
+			fetchResult = null;
+
+		// let dataList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+		if (!dataList || data.length <= 0) {
+			return;
+		}
+
+		// /*储存到mongo*/
+		// let book = {
+		// 	bookNum: data.bookNumber,
+		// 	url: data.url,
+		// 	chapters: dataList,
+		// },
+		// 	result = await BookModel.create(book);
+		// 	console.log('store books in mongo,',result);
+
+		// console.log(dataList)
+		console.log('get all chapters end,start fetch chapters detail');
+
+		//分发任务 每10s调取一次并发抓取10条记录 
+		//截取需要的章节数
+		/*根据章节,章节是一开始,默认无序章*/
+		//dataList, start, end, limit
+		//下面是抓每章内容
+
 		fetchResult = await delayAsync(dataList, start, end, limit);
-		//console.log(fetchResult)
+		//console.log(fetchResult);
+		console.log('got fetchResult-->end');
+
+		console.log('store chapters schema to mongo');
 		var chapters = await ChapterModel.create({
 			bookNum: data.bookNumber,
 			start: start,
 			end: end,
-			chapters: fetchResult,
+			chapters: fetchResult
 		});
-		console.log('store chapters in mongo,',chapters);
+		console.log('store chapters to mongo response by mongo,', chapters);
+
+		console.log(`fetch all chapters from ${start} to ${end} , spend time is ${(+new Date()-total_time)/1000}s`);
+
+		process.exit();
 	} catch (e) {
 		console.log(e);
 	}
-	return
-})()
+	return;
+})();
