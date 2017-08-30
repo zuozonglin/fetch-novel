@@ -24,9 +24,6 @@ var asyncFetch = function (data, number, method) {
 			//保存index
 			json.index = data.index;
 
-			/*
-			  目前未知callback为什么是undefined
-			*/
 			resultCollection.push(json);
 			// callback(null, json) //not work
 		}, function (err) {
@@ -39,9 +36,31 @@ var asyncFetch = function (data, number, method) {
 	});//end promise
 };
 
-var pieceAsync = function(startIndex, endIndex, chapter){
+var pieceAsync = function(delay, counter, startIndex, endIndex, chapter){
+	delay = parseInt(Math.random()*100+10)*10;//随机延时
 	return new Promise(function(resolve,reject){
-		
+		try {
+			setTimeout(async function () {
+				//获得此次任务开始执行的时间
+				var startTime = new Date(), time, chapterResult = [];
+				//进行并发捕获执行命令
+				try {
+					chapterResult = await asyncFetch(chapter, limit);
+				} catch (e) {
+					console.log(e);
+				}
+				
+				time = new Date() - startTime;
+				console.log(`完成抓取章节 ${startIndex} 到 ${endIndex} 计数器是${counter} 时间是${time/1000}s`)
+
+				resolve(chapterResult);
+
+			}, delay);
+
+		} catch (error) {
+			console.log('pieceAsync error ',error);
+			reject(error);
+		}
 	});
 };
 
