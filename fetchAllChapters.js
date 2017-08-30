@@ -32,7 +32,7 @@ try {
 		//设置
 		page.setting("userAgent", userAgent);
 		//判断是否访问成功
-		var status = await page.open(url), code = 1;
+		var status = await page.open(url), code = 1; // phantom 抓取网页做超时处理 =====！
 		if (status !== 'success') {
 			//访问失败修改状态码
 			code = -1;

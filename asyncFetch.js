@@ -14,10 +14,9 @@ var asyncFetch = function (data, number, method) {
 				{
 					stdout
 				} = await execAsync(cmd, {
-					//default value of maxBuffer is 200KB.
-					maxBuffer: 1024 * 5000
-				});
-
+						//default value of maxBuffer is 200KB.
+						maxBuffer: 1024 * 5000
+					});
 			console.log(`fetchChaper get reponse json=${stdout}`);
 			/*将内容保存到json中*/
 			json = JSON.parse(stdout);
@@ -36,10 +35,10 @@ var asyncFetch = function (data, number, method) {
 	});//end promise
 };
 
-var pieceAsync = function(delay, counter, startIndex, endIndex, chapter){
-	delay = parseInt(Math.random()*100+10)*10;//随机延时
-	return new Promise(function(resolve,reject){
+var pieceAsync = function (delay, counter, startIndex, endIndex, limit, chapter) {
+	return new Promise(function (resolve, reject) {
 		try {
+			console.log(`开始计划分组抓取章节 ${startIndex} 到 ${endIndex} 组号是${counter}`);
 			setTimeout(async function () {
 				//获得此次任务开始执行的时间
 				var startTime = new Date(), time, chapterResult = [];
@@ -48,17 +47,17 @@ var pieceAsync = function(delay, counter, startIndex, endIndex, chapter){
 					chapterResult = await asyncFetch(chapter, limit);
 				} catch (e) {
 					console.log(e);
+					reject(e);
 				}
-				
+
 				time = new Date() - startTime;
-				console.log(`完成抓取章节 ${startIndex} 到 ${endIndex} 计数器是${counter} 时间是${time/1000}s`)
+				console.log(`完成抓取章节 ${startIndex} 到 ${endIndex} ,组号是${counter} ,完成时间:${time / 1000}s`)
 
 				resolve(chapterResult);
 
 			}, delay);
-
 		} catch (error) {
-			console.log('pieceAsync error ',error);
+			console.log('pieceAsync error ', error);
 			reject(error);
 		}
 	});
@@ -66,15 +65,10 @@ var pieceAsync = function(delay, counter, startIndex, endIndex, chapter){
 
 /*实现延时加载的函数*/
 var delayAsync = function (dataList, start, end, limit) {
-	return new Promise(function (resolve, reject) {
-		var result = [],
-			counter = 0,
-			checkTimer,
-			checkTimeOut,
-			fetchTimers = [],
-			count = Math.ceil((end - start) / limit),//循环次数
-			remain = start - end,//剩余
-			i = 0;
+	console.log(`开始准备延时抓取 ${start}---->${end} `);
+	
+	return new Promise(async function (resolve, reject) {
+		var result = [], counter = 0, count = Math.ceil((end - start) / limit)//循环次数
 		if (dataList.length <= 0) {
 			//数据长度为空就返回
 			reject("error");
@@ -84,7 +78,7 @@ var delayAsync = function (dataList, start, end, limit) {
 		//console.log('input dataList : ', dataList);
 		try {
 			/*章数的开始和结束*/
-			console.log(`开始抓取章节从 ${start} 到 ${end} `)
+			console.log(`开始抓取章节从 ${start} 到 ${end} `);
 			let startIndex = start, endIndex;
 			while (startIndex != end) {
 				/*
@@ -99,60 +93,24 @@ var delayAsync = function (dataList, start, end, limit) {
 				}
 				/*分割任务*/
 				chapter = dataList.slice(startIndex, endIndex);
-				//通过闭包实现IIFE保存当时抓取的情况,不使用闭包绑定的数据则是运行之后的值
-				(function (startIndex, endIndex, chapter) {
-					//通过tempTimer 保存下来
-					let tempTimer = setTimeout(async function () {
-						//获得此次任务开始执行的时间
-						var startTime = new Date(), time, chapterResult = [];
-						//进行并发捕获执行命令
-						try {
-							chapterResult = await asyncFetch(chapter, limit);
-						} catch (e) {
-							console.log(e);
-						}
-						result = result.concat(chapterResult);
-						//用于判断任务标记 
-						counter++;
-						time = new Date() - startTime;
-						console.log(`完成抓取章节 ${startIndex} 到 ${endIndex} 计数器是${counter} 时间是${time/1000}s`)
-					}, i * 200);
-					fetchTimers.push(tempTimer);
+				var delay = parseInt(Math.random() * 100 + 10) * 10;//随机延时
+				var chapterResult = [];
 
-				})(startIndex, endIndex, chapter);
-				i++; //控制延时
-				//推进任务进行
-				startIndex = endIndex;
+				try {
+					chapterResult = await pieceAsync(delay, counter, startIndex, endIndex, limit, chapter);
+					result = result.concat(chapterResult);
+					console.log('delayAsync get current result ---->', result);
+				} catch (error) {
+					console.log(error);
+					reject(error);
+				}
+				counter++;
+				startIndex = endIndex;//推进任务进行
 			}
+			resolve(result);
 		} catch (e) {
 			reject(e);
 		}
-
-		/*定时判断任务是否完成*/
-		checkTimer = setInterval(function () {
-			console.log(`counter is ${counter} , total is ${count} ,time = ${+new Date()}`);
-			if (counter == count) {
-				console.log('all fetch end success,and return result');
-				//清除超时定时器
-				clearTimeout(checkTimeOut);
-				//清除自身定时器
-				clearInterval(checkTimer);
-				resolve(result);
-			}
-		}, 1000);
-
-		//or use promise all ?
-		//5mins计时器判断超时,超时进程退出
-		checkTimeOut = setTimeout(function () {
-			//超时清除所有定时器
-			for (let i = 0; i < fetchTimers.length; i++) {
-				clearTimeout(fetchTimers[i]);
-			}
-			//清除定时判断
-			clearInterval(checkTimer);
-			console.log("timout,stop all timer");
-			reject(result);
-		}, 5*60000);
 	});//end promise
 };
 

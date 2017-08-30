@@ -81,17 +81,17 @@ if (!program.start || !program.end) {
 		//下面是抓每章内容
 
 		fetchResult = await delayAsync(dataList, start, end, limit);
-		//console.log(fetchResult);
+		console.log(fetchResult);
 		console.log('got fetchResult-->end');
 
-		console.log('store chapters schema to mongo');
-		var chapters = await ChapterModel.create({
-			bookNum: data.bookNumber,
-			start: start,
-			end: end,
-			chapters: fetchResult
-		});
-		console.log('store chapters to mongo response by mongo,', chapters);
+		// console.log('store chapters schema to mongo');
+		// var chapters = await ChapterModel.create({
+		// 	bookNum: data.bookNumber,
+		// 	start: start,
+		// 	end: end,
+		// 	chapters: fetchResult
+		// });
+		// console.log('store chapters to mongo response by mongo,', chapters);
 
 		console.log(`fetch all chapters from ${start} to ${end} , spend time is ${(+new Date()-total_time)/1000}s`);
 
