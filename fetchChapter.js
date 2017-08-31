@@ -66,12 +66,17 @@ function puer(str) {
 * node fetchChapter.js -u http://www.qu.la/book/5443//3179367.html -f -p -i 94
 */
 (async function () {
+	
 	//创建实例
 	const instance = await phantom.create();
 	//创建页面容器
 	const page = await instance.createPage();
 	page.setting("userAgent", userAgent);
-	var status = await page.open(URL), code = 1;
+	
+	var code = 1;
+	var status = await page.open(URL);
+	// let wait = ms => new Promise(resolve => setTimeout(resolve, ms));//sleep
+
 	if (status !== 'success') {
 		code = -1;
 		return;
