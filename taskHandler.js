@@ -13,7 +13,7 @@ let cmd;
 * l 是并发数
 * m 模式 0=直接抓取本书所有章节,1=直接冲数据读取章节链接
 * b 书的编号
-* test command: node taskHandler.js -s 500 -e 600 -l 5 -b 5443 -m 1
+* test command: node taskHandler.js -s 400 -e 500 -l 5 -g 3 -b 5443
 */
 
 var totalFetchStartTime = +new Date();//总时间
@@ -23,6 +23,7 @@ program
 	.option('-s, --start [start]', 'start chapter', 0)
 	.option('-e, --end [end]', 'end chapter', 100)
 	.option('-l, --limit [limit]', 'limit async', 5)
+	.option('-g, --grouplimit [grouplimit]', 'grouplimit async', 3)
 	.option('-m, --mode [mode]', 'Add bbq sauce', 1)
 	.option('-b, --book [book]', 'book number')
 	.parse(process.argv);
@@ -32,6 +33,8 @@ program
  输出方式二 文件输出(在关注react-pdf,希望支持pdf输出)
 */
 if (!program.book) {
+	console.log('not find bookNumber,process exist');
+	process.exit();
 	return;
 } else {
 	cmd = `node fetchAllChapters.js -b ${program.book}`;
@@ -48,6 +51,7 @@ if (!program.start || !program.end) {
 			start = parseInt(program.start),
 			end = parseInt(program.end),
 			limit = parseInt(program.limit),
+			groupLimit = parseInt(program.grouplimit),
 			mode = parseInt(program.mode),
 			bookNumber = program.book,
 			dataList = null,
@@ -90,7 +94,7 @@ if (!program.start || !program.end) {
 		//dataList, start, end, limit
 		//下面是抓每章内容
 
-		fetchResult = await delayAsync(dataList, start, end, limit, 2);//2*5 并发测试效率比较高
+		fetchResult = await delayAsync(dataList, start, end, limit, groupLimit);//3*5 并发测试效率比较高
 		console.log('----got all fetchResult-->end----');
 		console.log(fetchResult);
 

@@ -1,5 +1,5 @@
 const async = require('async');
-const execAsync = require('async-child-process').execAsync;
+const fetchChapter = require('./fetchChapter.js');
 
 /**
  * 组内限制并发抓取
@@ -10,30 +10,19 @@ const execAsync = require('async-child-process').execAsync;
 var asyncFetch = function (data, number, method) {
 	return new Promise(function (resolve, reject) {
 		if (!data || data.length <= 0) {
-			reject("data not exist")
+			reject("data not exist");
 		}
 		//let resultCollection = [];
 		async.mapLimit(data, number, async function (item, callback) {//arraydata limit iteratee callback
 			//需要设置延时不然ip会被封掉
-			let cmd = `node fetchChapter.js -u ${item.link} -f -p -i ${item.index}`, json,
-				//获取一个内容就输出一个
-				{
-					stdout
-				} = await execAsync(cmd, {
-						//default value of maxBuffer is 200KB.
-						maxBuffer: 1024 * 5000
-					});
-			console.log(`fetch chaper.index=${item.index}, get reponse json=${stdout}`);
-			/*将内容保存到json中*/
-			try {
-				json = JSON.parse(stdout);//这里没必要从控制台读取，影响性能和速度
-			} catch (error) {
-				console.log(`fetch chapter.index=${item.index} error, parse json error`);
+			let json = await fetchChapter({ url: item.link, index: item.index });
+
+			console.log(`fetch chaper.index=${item.index}, get reponse json=${JSON.stringify(json)}`);
+
+			if (!json) {
+				json = { code: -1 };
 			}
 
-			if(!json){
-				json = {code:-1};
-			}
 			//保存index
 			json.index = item.index;
 
@@ -61,8 +50,8 @@ var asyncFetch = function (data, number, method) {
 var pieceAsync = function (counter, startIndex, endIndex, limit, chapter) {
 	return new Promise((resolve, reject) => {
 		try {
-			console.log(`start counter=${counter} fetch await, from ${startIndex}---->${endIndex}`);
-			var delay = parseInt(Math.random() * 1000 + 10)*counter;//随机延时
+			console.log(`start counter=${counter} fetch await, from ${startIndex}---->${endIndex}, time = ${+new Date()}`);
+			var delay = parseInt(Math.random() * 300 + 100);//随机延时  * (counter + 1)
 			setTimeout(async function () {
 				//获得此次任务开始执行的时间
 				var startTime = new Date(), time, chapterResult = [];
@@ -74,7 +63,7 @@ var pieceAsync = function (counter, startIndex, endIndex, limit, chapter) {
 					reject(e);
 				}
 				time = new Date() - startTime;
-				console.log(`end counter=${counter} fetch, 完成时间: ${time / 1000}s`);
+				console.log(`end counter=${counter} fetch, 完成时间: ${time / 1000}s, delay=${delay}ms, end time = ${+new Date()}`);
 				resolve(chapterResult);
 			}, delay);
 		} catch (error) {
