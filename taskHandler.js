@@ -6,14 +6,14 @@ const program = require('commander');
 const BookModel = require('./model/Books.js');
 const ChapterModel = require('./model/Chapters.js');
 let cmd;
+
 /*
-s 是章节开始(下标是0,所以需要手动减一,第一章就是 0)
-e 是结束章节数
-l 是并发数
-m 模式 0=直接抓取本书所有章节,1=直接冲数据读取章节链接
-b 书的编号
-test command:
-node taskHandler.js -s 0 -e 100 -l 5 -b 5443 -m 1
+* s 是章节开始(下标是0,所以需要手动减一,第一章就是 0)
+* e 是结束章节数
+* l 是并发数
+* m 模式 0=直接抓取本书所有章节,1=直接冲数据读取章节链接
+* b 书的编号
+* test command: node taskHandler.js -s 500 -e 600 -l 5 -b 5443 -m 1
 */
 
 var totalFetchStartTime = +new Date();//总时间
@@ -90,13 +90,13 @@ if (!program.start || !program.end) {
 		//dataList, start, end, limit
 		//下面是抓每章内容
 
-		fetchResult = await delayAsync(dataList, start, end, limit, 3);//2*5 并发测试效率比较高
+		fetchResult = await delayAsync(dataList, start, end, limit, 2);//2*5 并发测试效率比较高
 		console.log('----got all fetchResult-->end----');
 		console.log(fetchResult);
 
 		// console.log('store chapters schema to mongo');
 		// var chapters = await ChapterModel.create({
-		// 	bookNum: data.bookNumber,
+		// 	bookNum: bookNumber,
 		// 	start: start,
 		// 	end: end,
 		// 	chapters: fetchResult

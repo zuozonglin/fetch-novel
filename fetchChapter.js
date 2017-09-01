@@ -53,11 +53,11 @@ function pad(n, width, z) {
 */
 function puer(str) {
 	if (!str) {
-		return
+		return;
 	}
 	str = str.replace(/<br\s*\/?>/gi, "\r\n");
 	str = str.replace(/&nbsp;/g, " ")
-	return str
+	return str;
 }
 
 /*
@@ -66,20 +66,32 @@ function puer(str) {
 * node fetchChapter.js -u http://www.qu.la/book/5443//3179367.html -f -p -i 94
 */
 (async function () {
-	
+
 	//创建实例
 	const instance = await phantom.create();
 	//创建页面容器
 	const page = await instance.createPage();
 	page.setting("userAgent", userAgent);
-	
-	var code = 1;
-	var status = await page.open(URL);
-	// let wait = ms => new Promise(resolve => setTimeout(resolve, ms));//sleep
+
+	var code = 1, timeoutId = null;
+	var status = null;//await page.open(URL)
+	await Promise.race([
+		page.open(URL),
+		new Promise((resolve, reject) => {
+			timeoutId = setTimeout(() => {
+				reject('timeout');
+			}, 10000);//10s超时
+		})
+	]).then(res => {
+		status = res;
+		clearTimeout(timeoutId);//不清除timeout，上面的promise会等待超时，进程才会退出
+	}).catch(error => {
+		console.log(`phantom open url=${URL}, error=${error}`);
+	});
 
 	if (status !== 'success') {
-		code = -1;
-		return;
+		console.log(JSON.stringify({ code: -1 }));
+		// return;
 	} else {
 		// await page.includeJs("https://cdn.bootcss.com/jquery/1.12.4/jquery.js")
 		// await page.render('germy.png');
@@ -98,18 +110,16 @@ function puer(str) {
 		});
 		if (result.title == '' || result.content == '') {
 			//内容为空捕获失败
-			console.log(JSON.stringify({
-				code: -1
-			}));
-			return;
+			console.log(JSON.stringify({ code: -1 }));
+			// return;
 		} else {
 			//判断参数进一步处理
 			if (program.puer) {
-				var context = puer(result.content)
+				var context = puer(result.content);
 			}
 			//文件模式处理后进行保存到文件.返回文件路径
 			if (program.file) {
-				let path = ""
+				let path = "";
 				if (program.path) {
 					//自定义路径
 				} else {
