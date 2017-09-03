@@ -56,7 +56,7 @@ async function fetchChapter(params) {
     _params.index = pad(params.index || '', 4);
 
     //创建实例
-    const instance = await phantom.create();
+    const instance = await phantom.create([],{logLevel:'error'});
     //创建页面容器
     const page = await instance.createPage();
     page.setting("userAgent", userAgent);
