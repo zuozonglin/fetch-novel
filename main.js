@@ -1,8 +1,8 @@
 var taskHandler = require('./taskHandler.js');
 
 taskHandler({
-    start: 1000,
-    end: 1991,
+    start: 0,
+    end: null,
     limit: 10,
     groupLimit: 3,
     mode: 1,

@@ -74,6 +74,8 @@ Phantomjs 抓取网页超时的问题
 
 实现Phantomjs 实例池，提高 phantom webkit 的响应速度
 
+重试3次以后的抓取失败章节存入数据库，等待下次处理或人工处理
+
 ## 实现思路
 1. Phantomjs 抓取所有章节连接
 

@@ -68,6 +68,11 @@ async function taskHandler(params) {
 
 		console.log(`get book.chapters.length=${dataList.length} ,start fetch chapters detail`);
 
+		if(!end){//不传结束默认到最后章节
+			_params.end = dataList.length;
+			end = _params.end;
+		}
+
 		let fetchResults = [], fetchResult = null, whileCounter = 0;
 		while (!fetchResult || fetchResult.fail.length > 0) {
 			whileCounter++;

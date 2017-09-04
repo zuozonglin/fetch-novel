@@ -99,9 +99,10 @@ var pieceAsync = function (counter, startIndex, endIndex, limit, chapters, retry
  * {number} params.limit 组内并发
  * {number} params.groupLimit 组间并发
  * {number} params.retry 最大重试次数
+ * {number} params.whileCounter 最外层循环次数
  */
 var delayAsync = function (dataList, params) {
-	console.log(`prepare for fetch all chapters from ${params.start}---->${params.end}, total counter = ${params.whileCounter} `);
+	console.log(`prepare for fetch all chapters from ${params.start}---->${params.end}, whileCounter = ${params.whileCounter} `);
 	return new Promise(async function (resolve, reject) {
 		var result = { succ: [], fail: [], giveup: [] }, counter = 0, count = Math.ceil((params.end - params.start) / params.limit);//循环次数
 		if (dataList.length <= 0) {
