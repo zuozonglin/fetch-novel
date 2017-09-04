@@ -3,20 +3,22 @@ const fetchChapter = require('./fetchChapter.js');
 
 /**
  * 组内限制并发抓取
- * @param {Array} data 按组分割的章节
- * @param {number} limit 
- * @param {number} retry 
+ * @param {Object} params 参数
+ * 	{Array} params.book 书号
+ * 	{Array} params.chapters 按组分割的章节
+ * 	{number} params.limit 
+ * 	{number} params.retry 
  * @param {*} callback 
  */
-var asyncFetch = function (data, limit, retry, callback) {
+var asyncFetch = function (params, callback) {
 	return new Promise(function (resolve, reject) {
-		if (!data || data.length <= 0) {
+		if (!params.chapters || params.chapters.length <= 0) {
 			reject("data not exist");
 		}
 		let failArray = [], succArray = [], giveupArray = [];
-		async.mapLimit(data, limit, async function (item, callback) {//arraydata limit iteratee callback
+		async.mapLimit(params.chapters, params.limit, async function (item, callback) {//arraydata limit iteratee callback
 			//需要设置延时不然ip会被封掉
-			let json = await fetchChapter({ url: item.link, index: item.index });
+			let json = await fetchChapter({ url: item.link, index: item.index,book: params.book});
 
 			console.log(`fetch chaper.index=${item.index}, get reponse json=${JSON.stringify(json)}`);
 
@@ -34,7 +36,7 @@ var asyncFetch = function (data, limit, retry, callback) {
 				} else {
 					json.retry = 1;
 				}
-				if (json.retry <= retry) {
+				if (json.retry <= params.retry) {
 					failArray.push(json);
 				} else {
 					console.log(`fetch chapter.index=${json.index} fail, url=${json.link}, after try ${retry} times`);
@@ -56,31 +58,32 @@ var asyncFetch = function (data, limit, retry, callback) {
 
 /**
  * 每个分组异步延时
- * @param {*} delay 
- * @param {*} counter 
- * @param {*} startIndex 
- * @param {*} endIndex 
- * @param {*} limit 
- * @param {*} chapters 
- * @param {number} retry 
+ * @param {Object} params 
+ *  {string} params.book 
+ *  {*} params.counter 
+ *  {*} params.startIndex 
+ *  {*} params.endIndex 
+ *  {*} params.limit 
+ *  {*} params.chapters 
+ *  {number} params.retry 
  */
-var pieceAsync = function (counter, startIndex, endIndex, limit, chapters, retry) {
+var pieceAsync = function (params) {//counter, startIndex, endIndex, limit, chapters, retry
 	return new Promise((resolve, reject) => {
 		try {
-			console.log(`start counter=${counter} fetch await, from ${startIndex}---->${endIndex}, time = ${+new Date()}`);
+			console.log(`start counter=${params.counter} fetch await, from ${params.startIndex}---->${params.endIndex}, time = ${+new Date()}`);
 			var delay = parseInt(Math.random() * 300 + 100);//随机延时  * (counter + 1)
 			setTimeout(async function () {
 				//获得此次任务开始执行的时间
 				let startTime = new Date(), time, results = {};
 				//进行并发捕获执行命令
 				try {
-					results = await asyncFetch(chapters, limit, retry);
+					results = await asyncFetch(params);//params.chapters, params.limit, params.retry
 				} catch (e) {
 					console.log(e);
 					reject(e);
 				}
 				time = new Date() - startTime;
-				console.log(`end counter=${counter} fetch, 完成时间: ${time / 1000}s, delay=${delay}ms, end time = ${+new Date()}`);
+				console.log(`end counter=${params.counter} fetch, 完成时间: ${time / 1000}s, delay=${delay}ms, end time = ${+new Date()}`);
 				resolve(results);
 			}, delay);
 		} catch (error) {
@@ -124,7 +127,15 @@ var delayAsync = function (dataList, params) {
 				}
 				/*分割任务*/
 				let chapters = dataList.slice(startIndex, endIndex);
-				paralleArray.push(async.asyncify(async.apply(pieceAsync, counter, startIndex, endIndex, params.limit, chapters, params.retry)));//async.asyncify 包裹成异步函数
+				paralleArray.push(async.asyncify(async.apply(pieceAsync, {
+					book: params.book,
+					counter: counter,
+					startIndex: startIndex,
+					endIndex: endIndex,
+					limit: params.limit,
+					chapters: chapters,
+					retry: params.retry
+				})));//async.asyncify 包裹成异步函数
 
 				counter++;
 				startIndex = endIndex;//推进任务进行

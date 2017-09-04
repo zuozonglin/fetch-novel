@@ -2,7 +2,6 @@ const phantom = require('phantom');
 const mkdirp = require('mkdirp');
 const fsh = require('fs');
 const fs = require('async-file');
-const path = require('path');
 
 const userAgent = `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36`;
 
@@ -40,11 +39,12 @@ function puer(str) {
 }
 
 var defaultParams = {
+    book: '5443',
     puer: 'puerMode',
     file: 'save2File',
     url: '',
     index: '',
-    path: '/book/default/'
+    path: '/book/'
 };
 
 async function fetchChapter(params) {
@@ -56,7 +56,7 @@ async function fetchChapter(params) {
     _params.index = pad(params.index || '', 4);
 
     //创建实例
-    const instance = await phantom.create([],{logLevel:'error'});
+    const instance = await phantom.create([], { logLevel: 'error' });
     //创建页面容器
     const page = await instance.createPage();
     page.setting("userAgent", userAgent);
@@ -106,20 +106,20 @@ async function fetchChapter(params) {
             }
             //文件模式处理后进行保存到文件.返回文件路径
             if (_params.file) {
-                let path = _params.path;
+                let storePath = _params.path + _params.book + '/';
                 //避免文件夹不存在,__dirname指向的是文件所在路径
-                if (!fsh.existsSync(__dirname + path)) {
-                    mkdirp.sync(__dirname + path);//使用同步方法
+                if (!fsh.existsSync(__dirname + storePath)) {
+                    mkdirp.sync(__dirname + storePath);//使用同步方法
                 }
                 //拼接出文件输出的路径
-                path += (_params.index ? _params.index + ' ' : '') + result.title + ".txt";
-                await fs.writeFile(__dirname + path, context);
+                storePath += (_params.index ? _params.index + ' ' : '') + result.title + ".txt";
+                await fs.writeFile(__dirname + storePath, context);
 
                 //输出文件名
                 // console.log(JSON.stringify({ code: 1, filePath: path }));
 
                 await instance.exit();
-                return { code: 1, filePath: path };
+                return { code: 1, filePath: storePath };
             } else {
                 // console.log(JSON.stringify({  code: 1, content: result }));
 
