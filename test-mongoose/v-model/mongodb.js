@@ -5,7 +5,7 @@
 var mongoose = require('mongoose');
 var logger = console;
 var Promise = require('bluebird');
-var uri = 'mongodb://139.224.234.23:27017/novel';
+var uri = 'mongodb://127.0.0.1/novel';
 var init = false;
 module.exports = {
     initDB: function () {

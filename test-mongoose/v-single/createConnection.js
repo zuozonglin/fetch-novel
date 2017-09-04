@@ -1,5 +1,5 @@
 var mongoose = require('mongoose');
-var uri = 'mongodb://139.224.234.23/novel';
+var uri = 'mongodb://127.0.0.1/novel';
 // Use bluebird
 var options = { promiseLibrary: require('bluebird') };
 var db = mongoose.createConnection(uri, options);
